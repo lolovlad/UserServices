@@ -6,9 +6,19 @@ from alembic import context
 
 from Server.database import engine
 from Server.table import *
+from Server.settings import setting
 
 import os
 import sys
+
+config = context.config
+
+section = config.config_ini_section
+config.set_section_option(section, "DB_HOST", setting.db_host)
+config.set_section_option(section, "DB_PORT", str(setting.db_port))
+config.set_section_option(section, "DB_USER", setting.db_user)
+config.set_section_option(section, "DB_NAME", setting.db_name)
+config.set_section_option(section, "DB_PASS", setting.db_pass)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

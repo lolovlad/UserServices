@@ -16,7 +16,7 @@ from Server.table import base_table
 from Server.app import app
 from Server.database import get_session
 
-connect_async = f'sqlite+aiosqlite:///{setting.url_base_test}'
+connect_async = f'postgresql+asyncpg://{setting.db_name_test}:{setting.db_pass_test}@{setting.db_host_test}:{setting.db_port_test}/{setting.db_name_test}'
 
 engine_async_test = create_async_engine(connect_async, echo=False)
 async_session_test = sessionmaker(bind=engine_async_test, class_=AsyncSession, expire_on_commit=False)
@@ -46,3 +46,23 @@ def event_loop(request):
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
+
+
+client = TestClient(app)
+
+
+@pytest.fixture(scope="session")
+def get_token():
+    payload = f"grant_type=&username=vlad&password=vlad&client_id=&client_secret="
+    response = client.post("/v1/login/sign-in/", json=payload, headers={
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'accept': 'application/json'
+    })
+    token = response.json()['access_token']
+    return f'Bearer {token}'
+
+
+@pytest.fixture(scope="session")
+async def ac() -> AsyncClient:
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        yield ac

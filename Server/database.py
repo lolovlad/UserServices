@@ -7,8 +7,8 @@ from .settings import setting
 from .table import base_table
 
 
-connect = f'sqlite:///{setting.url_base}'
-connect_async = f'sqlite+aiosqlite:///{setting.url_base}'
+connect = f'postgresql+psycopg2://{setting.db_user}:{setting.db_pass}@{setting.db_host}:{setting.db_port}/{setting.db_name}'
+connect_async = f'postgresql+asyncpg://{setting.db_user}:{setting.db_pass}@{setting.db_host}:{setting.db_port}/{setting.db_name}'
 
 engine = create_engine(connect, echo=False)
 engine_async = create_async_engine(connect_async, echo=False)

@@ -2,8 +2,18 @@ from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
-    url_base: str = "File/base.db"
-    url_base_test: str
+    db_host: str
+    db_port: int
+    db_name: str
+    db_user: str
+    db_pass: str
+
+    db_host_test: str
+    db_port_test: int
+    db_name_test: str
+    db_user_test: str
+    db_pass_test: str
+
     server_host: str
     server_port: int
     front_end_host: str

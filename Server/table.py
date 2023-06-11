@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Boolean, Enum, DateTime
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, Boolean, BigInteger, ForeignKey
+from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP
+from sqlalchemy.orm import declarative_base, relationship
 from werkzeug.security import generate_password_hash, check_password_hash
 from enum import Enum as BaseEnum
 from datetime import datetime
@@ -14,23 +15,54 @@ class TypeUser(int, BaseEnum):
     ADMIN = 3
 
 
+class Country(base_table):
+    __tablename__ = "countries"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name_country = Column(String, nullable=False)
+    additional_information = Column(JSONB, nullable=True)
+
+
+class City(base_table):
+    __tablename__ = "cities"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    id_country = Column(Integer, ForeignKey("countries.id"), nullable=False)
+    name_city = Column(String(32), nullable=False)
+    additional_information = Column(JSONB, nullable=True)
+
+
+class Role(base_table):
+    __tablename__ = "roles"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name_role = Column(String(12), nullable=False, default="user")
+
+
 class User(base_table):
     __tablename__ = "user"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+
+    login = Column(String(50), nullable=False)
+    hash_password = Column(String, nullable=False, name="password")
+    role_id = Column(Integer, ForeignKey("roles.id"))
+
     name = Column(String(32), nullable=False)
     surname = Column(String(32), nullable=False)
     patronymic = Column(String(32), nullable=False)
 
-    is_activ = Column(Boolean, default=False)
+    email = Column(String(64), nullable=False)
+    phone = Column(String(24), nullable=False)
 
-    type_user = Column(Enum(TypeUser), default=TypeUser.USER)
+    country_id = Column(Integer, ForeignKey("countries.id"))
+    city_id = Column(Integer, ForeignKey("cities.id"))
 
-    last_activ = Column(DateTime, default=datetime.now())
-    is_online = Column(Boolean, default=False)
+    registered_at = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
+    is_active = Column(Boolean, default=False)
 
-    login = Column(String(50), nullable=False)
-    hash_password = Column(String, nullable=False, name="password")
+    additional_information = Column(JSONB, nullable=True)
+
+    role = relationship('Role', join_depth=1, back_populates="roles", lazy="joined")
+    country = relationship('Country', join_depth=1, back_populates="countries", lazy="joined")
+    city = relationship('City', join_depth=1, back_populates="cities", lazy="joined")
 
     @property
     def password(self):
